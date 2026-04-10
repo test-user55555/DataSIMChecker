@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SIM回線モニター</string>
+    <string name="widget_name">SIM回線ウィジェット</string>
+    <string name="widget_description">現在のデータ通信SIM回線をリアルタイム表示します</string>
+</resources>

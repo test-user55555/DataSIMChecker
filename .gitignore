@@ -1,0 +1,33 @@
+# Android generated files
+.gradle/
+/local.properties
+/.idea/
+*.iml
+*.iws
+*.ipr
+
+# Build outputs
+/build/
+/app/build/
+app/release/
+
+# Keystore / Signing (セキュリティ上必須)
+*.jks
+*.keystore
+keystore.properties
+release.properties
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# Gradle wrapper jar は除外しない（CIに必要）
+!gradle/wrapper/gradle-wrapper.jar
+!gradlew
+!gradlew.bat

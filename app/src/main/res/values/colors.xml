@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ダーク背景 -->
+    <color name="bg_dark">#0F0F1A</color>
+
+    <!-- テキスト -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#9E9E9E</color>
+
+    <!-- アクセント -->
+    <color name="accent_blue">#2196F3</color>
+    <color name="accent_green">#4CAF50</color>
+
+    <!-- 状態色 -->
+    <color name="active_green">#4CAF50</color>
+    <color name="inactive_gray">#757575</color>
+
+    <!-- 警告 -->
+    <color name="warning_text">#FF9800</color>
+
+    <!-- 汎用 -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+
+    <!-- SIMタイプ別 -->
+    <color name="esim_color">#1976D2</color>
+    <color name="physical_sim_color">#388E3C</color>
+</resources>

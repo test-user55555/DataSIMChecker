@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ホームスクリーンウィジェットレイアウト -->
+<!-- サイズ: 2x2 セル (約150dp x 100dp) -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widgetContainer"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:gravity="center_vertical">
+
+    <!-- 背景（動的に変更） -->
+    <LinearLayout
+        android:id="@+id/widgetBackground"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="14dp"
+        android:background="@drawable/widget_bg_unknown"
+        android:gravity="center_vertical">
+
+        <!-- ヘッダー行: タイトル + 更新ボタン -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="6dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="SIM回線"
+                android:textSize="10sp"
+                android:textColor="#AAFFFFFF"
+                android:textAllCaps="true"
+                android:letterSpacing="0.08" />
+
+            <TextView
+                android:id="@+id/btnWidgetRefresh"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="↺"
+                android:textSize="14sp"
+                android:textColor="#AAFFFFFF"
+                android:padding="4dp" />
+        </LinearLayout>
+
+        <!-- SIMタイプ（大きく表示） -->
+        <TextView
+            android:id="@+id/tvWidgetSimType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="eSIM"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="2dp" />
+
+        <!-- キャリア名 -->
+        <TextView
+            android:id="@+id/tvWidgetCarrier"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="---"
+            android:textSize="13sp"
+            android:textColor="#DDFFFFFF"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:layout_marginBottom="4dp" />
+
+        <!-- ネットワーク種別 + 電波強度 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tvWidgetNetwork"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="---"
+                android:textSize="13sp"
+                android:textColor="#AAFFFFFF"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvWidgetSignal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="▂▄▆█"
+                android:textSize="12sp"
+                android:textColor="#CCFFFFFF"
+                android:fontFamily="monospace" />
+        </LinearLayout>
+
+        <!-- 最終更新時刻 -->
+        <TextView
+            android:id="@+id/tvWidgetTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="--:--:--"
+            android:textSize="9sp"
+            android:textColor="#88FFFFFF"
+            android:gravity="end"
+            android:layout_marginTop="4dp" />
+
+    </LinearLayout>
+
+</LinearLayout>
