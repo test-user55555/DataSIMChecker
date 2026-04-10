@@ -56,6 +56,7 @@ jobs:
              artifacts/SimMonitor-debug-${{ github.run_number }}.apk
           cp app/build/outputs/apk/release/app-release-unsigned.apk \
              artifacts/SimMonitor-release-unsigned-${{ github.run_number }}.apk
+          echo "=== APK Files ==="
           ls -lh artifacts/
 
       - name: Upload Debug APK
