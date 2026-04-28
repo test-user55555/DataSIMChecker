@@ -22,6 +22,11 @@ import com.simmonitor.utils.SimUtils
 /**
  * メインActivity
  * SIM回線の状態をリアルタイム表示するメイン画面
+ *
+ * 更新タイミング:
+ *   - アプリ起動時（onResume → サービス起動）
+ *   - 手動更新ボタン押下時
+ *   - 画面ロック解除時（ScreenUnlockReceiver経由）
  */
 class MainActivity : AppCompatActivity() {
 
@@ -29,6 +34,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvActiveSimLabel: TextView
     private lateinit var tvActiveSimType: TextView
     private lateinit var tvCarrierName: TextView
+    private lateinit var tvProviderName: TextView
     private lateinit var tvNetworkType: TextView
     private lateinit var tvSignalStrength: TextView
     private lateinit var tvConnectionType: TextView
@@ -45,9 +51,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvSim2Signal: TextView
     private lateinit var btnStartService: Button
     private lateinit var btnStopService: Button
+    private lateinit var btnRefresh: Button
     private lateinit var tvPermissionWarning: TextView
     private lateinit var progressBar: ProgressBar
     private lateinit var tvRoamingWarning: TextView
+    private lateinit var tvLogArea: TextView
 
     // 権限リクエストランチャー
     private val permissionLauncher = registerForActivityResult(
@@ -72,6 +80,21 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // プロバイダ取得ログブロードキャストレシーバー
+    private val providerLogReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == SimMonitorService.BROADCAST_PROVIDER_LOG) {
+                val logs = intent.getStringArrayListExtra(SimMonitorService.EXTRA_LOG_MESSAGES)
+                if (!logs.isNullOrEmpty()) {
+                    appendLog(logs)
+                }
+                // 更新中表示を解除
+                btnRefresh.isEnabled = true
+                progressBar.visibility = View.GONE
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -82,11 +105,15 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         // ブロードキャストレシーバー登録
-        val filter = IntentFilter(SimMonitorService.BROADCAST_SIM_UPDATE)
+        val simFilter = IntentFilter(SimMonitorService.BROADCAST_SIM_UPDATE)
+        val logFilter = IntentFilter(SimMonitorService.BROADCAST_PROVIDER_LOG)
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(simUpdateReceiver, filter, RECEIVER_NOT_EXPORTED)
+            registerReceiver(simUpdateReceiver, simFilter, RECEIVER_NOT_EXPORTED)
+            registerReceiver(providerLogReceiver, logFilter, RECEIVER_NOT_EXPORTED)
         } else {
-            registerReceiver(simUpdateReceiver, filter)
+            registerReceiver(simUpdateReceiver, simFilter)
+            registerReceiver(providerLogReceiver, logFilter)
         }
         // 最新状態があれば即時反映
         SimMonitorService.latestState?.let { updateUI(it) }
@@ -95,6 +122,7 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         unregisterReceiver(simUpdateReceiver)
+        unregisterReceiver(providerLogReceiver)
     }
 
     /**
@@ -104,6 +132,7 @@ class MainActivity : AppCompatActivity() {
         tvActiveSimLabel = findViewById(R.id.tvActiveSimLabel)
         tvActiveSimType = findViewById(R.id.tvActiveSimType)
         tvCarrierName = findViewById(R.id.tvCarrierName)
+        tvProviderName = findViewById(R.id.tvProviderName)
         tvNetworkType = findViewById(R.id.tvNetworkType)
         tvSignalStrength = findViewById(R.id.tvSignalStrength)
         tvConnectionType = findViewById(R.id.tvConnectionType)
@@ -120,12 +149,15 @@ class MainActivity : AppCompatActivity() {
         tvSim2Signal = findViewById(R.id.tvSim2Signal)
         btnStartService = findViewById(R.id.btnStartService)
         btnStopService = findViewById(R.id.btnStopService)
+        btnRefresh = findViewById(R.id.btnRefresh)
         tvPermissionWarning = findViewById(R.id.tvPermissionWarning)
         progressBar = findViewById(R.id.progressBar)
         tvRoamingWarning = findViewById(R.id.tvRoamingWarning)
+        tvLogArea = findViewById(R.id.tvLogArea)
 
         btnStartService.setOnClickListener { startMonitorService() }
         btnStopService.setOnClickListener { stopMonitorService() }
+        btnRefresh.setOnClickListener { manualRefresh() }
     }
 
     /**
@@ -178,6 +210,8 @@ class MainActivity : AppCompatActivity() {
         progressBar.visibility = View.VISIBLE
         btnStartService.isEnabled = false
         btnStopService.isEnabled = true
+        btnRefresh.isEnabled = false
+        appendLog(listOf("▶ 監視サービス開始 → プロバイダ取得中..."))
     }
 
     /**
@@ -191,6 +225,45 @@ class MainActivity : AppCompatActivity() {
         progressBar.visibility = View.GONE
         btnStartService.isEnabled = true
         btnStopService.isEnabled = false
+        btnRefresh.isEnabled = false
+        appendLog(listOf("■ 監視サービス停止"))
+    }
+
+    /**
+     * 手動でプロバイダ情報を再取得
+     */
+    private fun manualRefresh() {
+        if (!SimMonitorService.isRunning) {
+            startMonitorService()
+            return
+        }
+        val intent = Intent(this, SimMonitorService::class.java).apply {
+            action = SimMonitorService.ACTION_FETCH_PROVIDER
+            putExtra(SimMonitorService.EXTRA_TRIGGER, "手動更新")
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(intent)
+        } else {
+            startService(intent)
+        }
+        btnRefresh.isEnabled = false
+        progressBar.visibility = View.VISIBLE
+        appendLog(listOf("🔄 手動更新: プロバイダ取得中..."))
+    }
+
+    /**
+     * ログをUI上のログエリアに追記
+     */
+    private fun appendLog(lines: List<String>) {
+        val current = tvLogArea.text.toString()
+        val newText = if (current.isBlank()) {
+            lines.joinToString("\n")
+        } else {
+            lines.joinToString("\n") + "\n" + current
+        }
+        // 最大 50 行に制限
+        val trimmed = newText.lines().take(50).joinToString("\n")
+        tvLogArea.text = trimmed
     }
 
     /**
@@ -211,6 +284,7 @@ class MainActivity : AppCompatActivity() {
             tvActiveSimType.text = "未接続"
             tvActiveSimType.setBackgroundResource(R.drawable.badge_disconnected)
             tvCarrierName.text = "-"
+            tvProviderName.text = "データ通信なし"
             tvNetworkType.text = "-"
             tvSignalStrength.text = "電波なし"
             tvRoamingWarning.visibility = View.GONE
@@ -220,6 +294,7 @@ class MainActivity : AppCompatActivity() {
             tvActiveSimType.text = "WiFi"
             tvActiveSimType.setBackgroundResource(R.drawable.badge_wifi)
             tvCarrierName.text = "Wi-Fi接続中"
+            tvProviderName.text = state.ipv4ProviderName
             tvNetworkType.text = "WiFi"
             tvSignalStrength.text = "📶"
             tvRoamingWarning.visibility = View.GONE
@@ -239,16 +314,18 @@ class MainActivity : AppCompatActivity() {
                 else R.drawable.badge_physical_sim
             )
             tvCarrierName.text = activeSim.carrierName
+            tvProviderName.text = state.ipv4ProviderName
             tvNetworkType.text = activeSim.networkType
             tvSignalStrength.text = "電波: ${SimUtils.signalStrengthToIcon(activeSim.signalStrength)}"
 
-            // ローミング警告
             if (activeSim.isRoaming) {
                 tvRoamingWarning.visibility = View.VISIBLE
                 tvRoamingWarning.text = "⚠️ ローミング中"
             } else {
                 tvRoamingWarning.visibility = View.GONE
             }
+        } else {
+            tvProviderName.text = state.ipv4ProviderName
         }
 
         // 各SIMカードの詳細情報表示
@@ -268,8 +345,6 @@ class MainActivity : AppCompatActivity() {
                 else getColor(R.color.inactive_gray)
             )
             tvSim1Signal.text = SimUtils.signalStrengthToIcon(sim1.signalStrength)
-
-            // SIM1カードの強調表示
             cardSim1.setBackgroundResource(
                 if (sim1.isDataActive) R.drawable.card_active else R.drawable.card_inactive
             )
@@ -292,8 +367,6 @@ class MainActivity : AppCompatActivity() {
                 else getColor(R.color.inactive_gray)
             )
             tvSim2Signal.text = SimUtils.signalStrengthToIcon(sim2.signalStrength)
-
-            // SIM2カードの強調表示
             cardSim2.setBackgroundResource(
                 if (sim2.isDataActive) R.drawable.card_active else R.drawable.card_inactive
             )

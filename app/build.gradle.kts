@@ -18,6 +18,24 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // CI環境（GitHub Actions）から keystore を読み込んで署名
+    val ksPath     = System.getenv("KEYSTORE_PATH") ?: ""
+    val ksPassword = System.getenv("KEYSTORE_PASSWORD") ?: ""
+    val ksAlias    = System.getenv("KEY_ALIAS") ?: "simmonitor"
+    val ksKeyPass  = System.getenv("KEY_PASSWORD") ?: ""
+    val hasSigning = ksPath.isNotEmpty() && ksPassword.isNotEmpty()
+
+    signingConfigs {
+        create("release") {
+            if (hasSigning) {
+                storeFile     = file(ksPath)
+                storePassword = ksPassword
+                keyAlias      = ksAlias
+                keyPassword   = ksKeyPass.ifEmpty { ksPassword }
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -26,6 +44,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            if (hasSigning) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
         debug {
             isDebuggable = true

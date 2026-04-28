@@ -8,6 +8,8 @@
     <!-- ネットワーク状態の監視 -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <!-- インターネットアクセス（minsoku.net プロバイダ判定API用） -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <!-- フォアグラウンドサービス（リアルタイム監視用） -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
@@ -77,6 +79,11 @@
                 <action android:name="android.telephony.action.DEFAULT_DATA_SUBSCRIPTION_CHANGED" />
             </intent-filter>
         </receiver>
+
+        <!-- 画面ロック解除レシーバー（動的登録のみ）
+             Android 8.0+ では ACTION_USER_PRESENT は Manifest 静的登録では受信できないため
+             SimMonitorService.onCreate() で動的登録する。
+             静的登録は不要のため削除済み。 -->
 
     </application>
 

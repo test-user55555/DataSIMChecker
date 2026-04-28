@@ -36,7 +36,11 @@ data class DataConnectionState(
     val allSims: List<SimInfo>,        // 全SIM一覧
     val connectionType: String,        // WiFi/Mobile/なし
     val isConnected: Boolean,          // 接続中か
-    val lastUpdated: Long              // 最終更新時刻（エポックミリ秒）
+    val lastUpdated: Long,             // 最終更新時刻（エポックミリ秒）
+    // --- minsoku.net API で取得する「実通信プロバイダ」情報 ---
+    val ipv4ProviderName: String = "取得中...",  // IPv4 側のプロバイダ名
+    val ipv6ProviderName: String = "未接続",     // IPv6 側のプロバイダ名
+    val ipv4Address: String = ""                 // 現在の外部 IPv4 アドレス
 )
 
 /**

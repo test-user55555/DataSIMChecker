@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  楽天モバイル 通知バーアイコン（白単色 24×24dp）
+  楽天公式ロゴの "R" を太字ブロック体で表現
+  全体を 24×24 の viewport 内に収める
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- R の左縦棒 -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M 2,2 L 6,2 L 6,21 L 2,21 Z"/>
+
+    <!-- R のボウル（上半分の膨らみ・右側） -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="
+          M 6,2
+          L 14,2
+          C 18.5,2 21,5 21,9
+          C 21,13 18.5,15 14,15
+          L 6,15
+          L 6,12
+          L 13,12
+          C 16,12 17.5,11 17.5,9
+          C 17.5,7 16,5 13,5
+          L 6,5
+          Z
+        "/>
+
+    <!-- R の右脚（対角線、ボウル下端から右下へ） -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="
+          M 11,15
+          L 15,15
+          L 21,21
+          L 17,21
+          Z
+        "/>
+
+    <!-- 下部チェックライン（楽天ロゴ特有の右上がり水平線） -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="
+          M 2,23
+          L 22,22
+          L 22,24
+          L 2,24
+          Z
+        "/>
+</vector>

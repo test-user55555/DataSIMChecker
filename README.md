@@ -127,3 +127,20 @@ val defaultDataSubId = SubscriptionManager.getDefaultDataSubscriptionId()
 - 一部メーカーはデュアルSIMのAPI制限あり（特にeSIM切り替え中の情報取得）
 - Android 12以降、バックグラウンドからのサービス起動に制限あり
 - ネットワーク変更のブロードキャストはAndroid 7以降、動的登録が必要
+
+## CI/CD (GitHub Actions)
+
+ソースをpushすると自動でAPKがビルドされます。
+
+### Actions有効化手順（初回のみ）
+
+1. GitHubリポジトリの `docs/github-actions-build.yml` を開く
+2. 内容をコピー
+3. リポジトリで [`.github/workflows/build.yml` を新規作成](https://github.com/test-user55555/DataSIMChecker/new/main/.github/workflows)
+4. コミット → Actions が自動実行開始
+
+### ビルド成果物
+
+Actionsタブ → 対象のRunを選択 → **Artifacts** よりダウンロード:
+- `SimMonitor-debug-apk` — そのままインストール可能
+- `SimMonitor-release-unsigned-apk` — 署名後にPlay Store配布可能
