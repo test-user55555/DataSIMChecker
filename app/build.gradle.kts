@@ -12,28 +12,10 @@ android {
         applicationId = "com.simmonitor"
         minSdk = 29         // Android 10以上（eSIM API対応）
         targetSdk = 36      // Android 16
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-
-    // CI環境（GitHub Actions）から keystore を読み込んで署名
-    val ksPath     = System.getenv("KEYSTORE_PATH") ?: ""
-    val ksPassword = System.getenv("KEYSTORE_PASSWORD") ?: ""
-    val ksAlias    = System.getenv("KEY_ALIAS") ?: "simmonitor"
-    val ksKeyPass  = System.getenv("KEY_PASSWORD") ?: ""
-    val hasSigning = ksPath.isNotEmpty() && ksPassword.isNotEmpty()
-
-    signingConfigs {
-        create("release") {
-            if (hasSigning) {
-                storeFile     = file(ksPath)
-                storePassword = ksPassword
-                keyAlias      = ksAlias
-                keyPassword   = ksKeyPass.ifEmpty { ksPassword }
-            }
-        }
     }
 
     buildTypes {
@@ -44,9 +26,6 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            if (hasSigning) {
-                signingConfig = signingConfigs.getByName("release")
-            }
         }
         debug {
             isDebuggable = true
