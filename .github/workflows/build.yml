@@ -23,16 +23,6 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Cache Gradle packages
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-v3-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-v3-
-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
@@ -40,52 +30,37 @@ jobs:
         run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses 2>/dev/null || true
 
       - name: Build Debug APK
-        run: ./gradlew assembleDebug
+        run: ./gradlew :app:assembleDebug
         env:
-          GRADLE_OPTS: "-Xmx6g -XX:MaxMetaspaceSize=2g"
+          GRADLE_OPTS: "-Xmx4g"
 
       - name: Build Release APK (unsigned)
-        run: ./gradlew assembleRelease
+        run: ./gradlew :app:assembleRelease
         env:
-          GRADLE_OPTS: "-Xmx6g -XX:MaxMetaspaceSize=2g"
+          GRADLE_OPTS: "-Xmx4g"
 
-      - name: Collect APKs
+      - name: Rename and collect APKs
         run: |
           mkdir -p artifacts
+          VER=$(grep 'versionName' app/build.gradle.kts | grep -oP '"[^"]+"' | tr -d '"' | head -1)
+          CODE=$(grep 'versionCode' app/build.gradle.kts | grep -oP '[0-9]+' | head -1)
+          BUILD=${{ github.run_number }}
           cp app/build/outputs/apk/debug/app-debug.apk \
-             artifacts/SimMonitor-debug-${{ github.run_number }}.apk
+             "artifacts/SimMonitor-debug-v${VER}-${CODE}-build${BUILD}.apk"
           cp app/build/outputs/apk/release/app-release-unsigned.apk \
-             artifacts/SimMonitor-release-unsigned-${{ github.run_number }}.apk
+             "artifacts/SimMonitor-release-unsigned-v${VER}-${CODE}-build${BUILD}.apk"
           ls -lh artifacts/
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: SimMonitor-debug-apk
-          path: artifacts/SimMonitor-debug-${{ github.run_number }}.apk
+          name: SimMonitor-debug-v${{ github.run_number }}
+          path: artifacts/SimMonitor-debug-*.apk
           retention-days: 14
 
-      - name: Upload Release APK (unsigned)
+      - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
-          name: SimMonitor-release-unsigned-apk
-          path: artifacts/SimMonitor-release-unsigned-${{ github.run_number }}.apk
+          name: SimMonitor-release-unsigned-v${{ github.run_number }}
+          path: artifacts/SimMonitor-release-unsigned-*.apk
           retention-days: 14
-
-      - name: Build Summary
-        if: always()
-        run: |
-          echo "## 📦 Build Summary" >> $GITHUB_STEP_SUMMARY
-          if ls artifacts/*.apk 2>/dev/null; then
-            echo "| ファイル | サイズ |" >> $GITHUB_STEP_SUMMARY
-            echo "|---------|--------|" >> $GITHUB_STEP_SUMMARY
-            for f in artifacts/*.apk; do
-              size=$(du -sh "$f" | cut -f1)
-              name=$(basename "$f")
-              echo "| \`$name\` | $size |" >> $GITHUB_STEP_SUMMARY
-            done
-            echo "✅ APKはActionsタブの Artifacts からダウンロードできます" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "❌ APKの生成に失敗しました" >> $GITHUB_STEP_SUMMARY
-          fi
-

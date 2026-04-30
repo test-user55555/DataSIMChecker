@@ -73,6 +73,7 @@ class SimStatusWidget : AppWidgetProvider() {
             if (state == null) {
                 // 状態未取得
                 views.setTextViewText(R.id.tvWidgetSimType, "読込中...")
+                views.setTextViewText(R.id.tvWidgetProvider, "取得中...")
                 views.setTextViewText(R.id.tvWidgetCarrier, "---")
                 views.setTextViewText(R.id.tvWidgetNetwork, "---")
                 views.setTextViewText(R.id.tvWidgetSignal, "░░░░")
@@ -102,7 +103,8 @@ class SimStatusWidget : AppWidgetProvider() {
                 !state.isConnected -> {
                     // 未接続
                     views.setTextViewText(R.id.tvWidgetSimType, "未接続")
-                    views.setTextViewText(R.id.tvWidgetCarrier, "データ通信なし")
+                    views.setTextViewText(R.id.tvWidgetProvider, "データ通信なし")
+                    views.setTextViewText(R.id.tvWidgetCarrier, "---")
                     views.setTextViewText(R.id.tvWidgetNetwork, "---")
                     views.setTextViewText(R.id.tvWidgetSignal, "📵")
                     views.setInt(R.id.widgetBackground, "setBackgroundResource",
@@ -111,6 +113,7 @@ class SimStatusWidget : AppWidgetProvider() {
                 state.connectionType == "WiFi" -> {
                     // WiFi
                     views.setTextViewText(R.id.tvWidgetSimType, "📶 WiFi")
+                    views.setTextViewText(R.id.tvWidgetProvider, state.ipv4ProviderName)
                     views.setTextViewText(R.id.tvWidgetCarrier, "Wi-Fi接続中")
                     views.setTextViewText(R.id.tvWidgetNetwork, "WiFi")
                     views.setTextViewText(R.id.tvWidgetSignal, "▂▄▆█")
@@ -128,7 +131,11 @@ class SimStatusWidget : AppWidgetProvider() {
                     val slotLabel = if (activeSim.slotIndex >= 0) " (S${activeSim.slotIndex + 1})" else ""
 
                     views.setTextViewText(R.id.tvWidgetSimType, "$simTypeLabel$slotLabel")
-                    views.setTextViewText(R.id.tvWidgetCarrier, activeSim.carrierName + roamingLabel)
+                    // プロバイダ名をメインに表示（実際に通信している回線）
+                    views.setTextViewText(R.id.tvWidgetProvider,
+                        state.ipv4ProviderName + roamingLabel)
+                    // キャリア設定名はサブ表示
+                    views.setTextViewText(R.id.tvWidgetCarrier, activeSim.carrierName)
                     views.setTextViewText(R.id.tvWidgetNetwork, activeSim.networkType)
                     views.setTextViewText(R.id.tvWidgetSignal,
                         SimUtils.signalStrengthToIcon(activeSim.signalStrength))
@@ -144,6 +151,7 @@ class SimStatusWidget : AppWidgetProvider() {
                 }
                 else -> {
                     views.setTextViewText(R.id.tvWidgetSimType, "取得中...")
+                    views.setTextViewText(R.id.tvWidgetProvider, state.ipv4ProviderName)
                     views.setTextViewText(R.id.tvWidgetCarrier, "---")
                     views.setTextViewText(R.id.tvWidgetNetwork, "---")
                     views.setTextViewText(R.id.tvWidgetSignal, "░░░░")

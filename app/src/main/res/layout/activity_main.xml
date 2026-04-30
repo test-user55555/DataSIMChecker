@@ -91,12 +91,22 @@
                     android:background="@drawable/badge_esim" />
             </LinearLayout>
 
-            <!-- キャリア名 -->
+            <!-- キャリア名（SIM設定名・サブテキスト） -->
             <TextView
                 android:id="@+id/tvCarrierName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="---"
+                android:textSize="13sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginBottom="2dp" />
+
+            <!-- プロバイダ名（実際の通信回線、minsoku.net取得） -->
+            <TextView
+                android:id="@+id/tvProviderName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="取得中..."
                 android:textSize="28sp"
                 android:textStyle="bold"
                 android:textColor="@color/text_primary"
@@ -303,13 +313,13 @@
         </LinearLayout>
 
         <!-- ==========================================
-             サービス制御ボタン
+             サービス制御ボタン + 情報更新ボタン
              ========================================== -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="12dp">
+            android:layout_marginBottom="8dp">
 
             <Button
                 android:id="@+id/btnStartService"
@@ -332,6 +342,17 @@
                 android:enabled="false" />
         </LinearLayout>
 
+        <!-- 情報更新ボタン（プロバイダを再取得する） -->
+        <Button
+            android:id="@+id/btnRefresh"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🔄 情報更新（プロバイダ再取得）"
+            android:textSize="15sp"
+            android:backgroundTint="#2E7D32"
+            android:enabled="false"
+            android:layout_marginBottom="12dp" />
+
         <!-- 最終更新時刻 -->
         <TextView
             android:id="@+id/tvLastUpdated"
@@ -341,7 +362,33 @@
             android:textSize="11sp"
             android:textColor="@color/text_secondary"
             android:gravity="center"
-            android:layout_marginBottom="8dp" />
+            android:layout_marginBottom="12dp" />
+
+        <!-- ==========================================
+             ログエリア（デバッグ用）
+             ========================================== -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📋 通信ログ"
+            android:textSize="13sp"
+            android:textColor="@color/text_secondary"
+            android:textAllCaps="true"
+            android:letterSpacing="0.1"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:id="@+id/tvLogArea"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="80dp"
+            android:padding="12dp"
+            android:background="#1A1A2E"
+            android:textColor="#A8D8A8"
+            android:textSize="11sp"
+            android:fontFamily="monospace"
+            android:text="ログ待機中..."
+            android:layout_marginBottom="12dp" />
 
         <!-- 説明テキスト -->
         <TextView

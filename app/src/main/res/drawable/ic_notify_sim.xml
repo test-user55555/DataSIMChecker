@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  汎用SIM/モバイルデータ接続アイコン（通知バー用・白単色 24×24dp）
+  電波バー4本（フル）で「モバイルデータ接続中」を表現
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- 電波バー 1（最小・左） -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M2,20 L5,20 L5,22 L2,22 Z"/>
+
+    <!-- 電波バー 2 -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M7,16 L10,16 L10,22 L7,22 Z"/>
+
+    <!-- 電波バー 3 -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M12,12 L15,12 L15,22 L12,22 Z"/>
+
+    <!-- 電波バー 4（最大・右） -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M17,8 L20,8 L20,22 L17,22 Z"/>
+</vector>
