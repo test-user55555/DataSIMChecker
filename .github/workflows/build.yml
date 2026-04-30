@@ -23,98 +23,44 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Cache Gradle packages
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-v3-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-v3-
-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
       - name: Accept Android SDK licenses
         run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses 2>/dev/null || true
 
-      - name: Extract version info
-        id: version
-        run: |
-          VERSION_NAME=$(grep 'versionName' app/build.gradle.kts | grep -oP '"\K[^"]+')
-          VERSION_CODE=$(grep 'versionCode' app/build.gradle.kts | grep -oP '\d+' | head -1)
-          echo "name=${VERSION_NAME}" >> $GITHUB_OUTPUT
-          echo "code=${VERSION_CODE}" >> $GITHUB_OUTPUT
-          echo "Version: ${VERSION_NAME} (${VERSION_CODE})"
-
-      - name: Restore keystore
-        run: |
-          if [ -n "$KSBASE64" ]; then
-            echo "$KSBASE64" | base64 -d > simmonitor-release.keystore
-            echo "Keystore restored"
-          else
-            echo "No keystore secret - release will be unsigned"
-          fi
-        env:
-          KSBASE64: ${{ secrets.KEYSTORE_BASE64 }}
-
       - name: Build Debug APK
-        run: ./gradlew assembleDebug
+        run: ./gradlew :app:assembleDebug
         env:
-          GRADLE_OPTS: "-Xmx6g -XX:MaxMetaspaceSize=2g"
+          GRADLE_OPTS: "-Xmx4g"
 
-      - name: Build Release APK
-        run: ./gradlew assembleRelease
+      - name: Build Release APK (unsigned)
+        run: ./gradlew :app:assembleRelease
         env:
-          GRADLE_OPTS: "-Xmx6g -XX:MaxMetaspaceSize=2g"
-          KEYSTORE_PATH: simmonitor-release.keystore
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          GRADLE_OPTS: "-Xmx4g"
 
-      - name: Collect APKs
+      - name: Rename and collect APKs
         run: |
           mkdir -p artifacts
-          VER="${{ steps.version.outputs.name }}"
-          CODE="${{ steps.version.outputs.code }}"
-          BUILD="${{ github.run_number }}"
-
-          DEBUG_NAME="SimMonitor-debug-v${VER}-${CODE}-build${BUILD}.apk"
-          cp app/build/outputs/apk/debug/app-debug.apk artifacts/${DEBUG_NAME}
-          echo "DEBUG_APK=${DEBUG_NAME}" >> $GITHUB_ENV
-
-          if [ -f app/build/outputs/apk/release/app-release.apk ]; then
-            REL_NAME="SimMonitor-release-v${VER}-${CODE}-build${BUILD}.apk"
-            cp app/build/outputs/apk/release/app-release.apk artifacts/${REL_NAME}
-          else
-            REL_NAME="SimMonitor-release-unsigned-v${VER}-${CODE}-build${BUILD}.apk"
-            cp app/build/outputs/apk/release/app-release-unsigned.apk artifacts/${REL_NAME}
-          fi
-          echo "RELEASE_APK=${REL_NAME}" >> $GITHUB_ENV
+          VER=$(grep 'versionName' app/build.gradle.kts | grep -oP '"[^"]+"' | tr -d '"' | head -1)
+          CODE=$(grep 'versionCode' app/build.gradle.kts | grep -oP '[0-9]+' | head -1)
+          BUILD=${{ github.run_number }}
+          cp app/build/outputs/apk/debug/app-debug.apk \
+             "artifacts/SimMonitor-debug-v${VER}-${CODE}-build${BUILD}.apk"
+          cp app/build/outputs/apk/release/app-release-unsigned.apk \
+             "artifacts/SimMonitor-release-unsigned-v${VER}-${CODE}-build${BUILD}.apk"
           ls -lh artifacts/
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: SimMonitor-debug-v${{ steps.version.outputs.name }}-build${{ github.run_number }}
-          path: artifacts/${{ env.DEBUG_APK }}
+          name: SimMonitor-debug-v${{ github.run_number }}
+          path: artifacts/SimMonitor-debug-*.apk
           retention-days: 14
 
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
-          name: SimMonitor-release-v${{ steps.version.outputs.name }}-build${{ github.run_number }}
-          path: artifacts/${{ env.RELEASE_APK }}
+          name: SimMonitor-release-unsigned-v${{ github.run_number }}
+          path: artifacts/SimMonitor-release-unsigned-*.apk
           retention-days: 14
-
-      - name: Build Summary
-        if: always()
-        run: |
-          VER="${{ steps.version.outputs.name }}"
-          CODE="${{ steps.version.outputs.code }}"
-          BUILD="${{ github.run_number }}"
-          echo "## Build v${VER} (code ${CODE}) build #${BUILD}" >> $GITHUB_STEP_SUMMARY
-          for f in artifacts/*.apk 2>/dev/null; do
-            [ -f "$f" ] && echo "- $(basename $f): $(du -sh $f | cut -f1)" >> $GITHUB_STEP_SUMMARY
-          done
